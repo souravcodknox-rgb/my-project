@@ -53,8 +53,15 @@ jobs:
           # Wait for rollout to finish
           kubectl rollout status deployment/screenviewer-frontend --timeout=300s
 
-      # 🔟 Optional: Debug pods (if something fails)
-      - name: Check pods
+      # 🔟 Debug pods (Runs even if previous steps fail)
+      - name: Debug Kubernetes State
+        if: always()
         run: |
+          echo "=== Pod Status ==="
           kubectl get pods -o wide
-          kubectl logs -l app=screenviewer
+          echo "=== Events ==="
+          kubectl get events --sort-by='.lastTimestamp'
+          echo "=== Pod Describe ==="
+          kubectl describe pods
+          echo "=== Container Logs ==="
+          kubectl logs -l app=screenviewer --tail=100
