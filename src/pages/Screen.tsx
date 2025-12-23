@@ -186,7 +186,7 @@ const Screen = () => {
   ];
 
   return (
-    <AdminLayout title="Screens" subtitle="Monitor and manage all connected displays">
+    <AdminLayout title="Screens" subtitle="Monitor and manage all connected displayssssssssssss">
 
 
 
