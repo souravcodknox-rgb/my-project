@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: screenviewer-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: screenviewer
+  template:
+    metadata:
+      labels:
+        app: screenviewer
+    spec:
+      containers:
+        - name: frontend
+          image: souravcodknox/cicd:latest
+          ports:
+            - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: screenviewer-service
+spec:
+  selector:
+    app: screenviewer
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
