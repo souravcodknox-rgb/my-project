@@ -1,0 +1,54 @@
+name: Node.js + Docker + Kubernetes CI/CD
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout code
+      - uses: actions/checkout@v4
+
+      # 2️⃣ Set up Node.js
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: npm
+
+      # 3️⃣ Install dependencies
+      - run: npm ci --legacy-peer-deps
+
+      # 4️⃣ Build frontend
+      - run: npm run build
+
+      # 5️⃣ Log in to Docker Hub
+      - uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # 6️⃣ Build & push Docker image
+      - uses: mr-smithers-excellent/docker-build-push@v6
+        with:
+          image: souravcodknox/cicd
+          tags: latest
+          registry: docker.io
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          dockerfile: Dockerfile.ci
+
+      # 7️⃣ Set up kubectl
+      - name: Set up kubectl
+        run: |
+          echo "${{ secrets.KUBECONFIG_DATA }}" | base64 --decode > kubeconfig
+          export KUBECONFIG=$PWD/kubeconfig
+
+      # 8️⃣ Deploy to Kubernetes
+      - name: Apply Kubernetes manifests
+        run: |
+          kubectl apply -f k8s-deployment.yaml
+          kubectl set image deployment/screenviewer-frontend frontend=souravcodknox/cicd:latest
+          kubectl rollout status deployment/screenviewer-frontend
