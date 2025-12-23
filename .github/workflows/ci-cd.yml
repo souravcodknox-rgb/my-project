@@ -34,9 +34,19 @@ jobs:
         with:
           version: v0.26.0
 
-      # 7️⃣ Create Kind cluster
+      # 7️⃣ Create Kind cluster with extra port mapping for testing
       - name: Create Kind cluster
-        run: kind create cluster --name test-cluster
+        run: |
+          cat <<EOF > kind-config.yaml
+          kind: Cluster
+          apiVersion: kind.x-k8s.io/v1alpha4
+          nodes:
+            - role: control-plane
+              extraPortMappings:
+                - containerPort: 3000
+                  hostPort: 3000
+          EOF
+          kind create cluster --name test-cluster --config kind-config.yaml
 
       # 8️⃣ Build Docker image and load into Kind
       - name: Build Docker image for Kind
