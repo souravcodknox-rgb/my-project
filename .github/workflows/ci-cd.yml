@@ -29,14 +29,12 @@ jobs:
       # 5️⃣ Set up Docker Buildx
       - uses: docker/setup-buildx-action@v2
 
-      # 6️⃣ Set up Kind (Kubernetes in Docker)
-      - uses: engineerd/setup-kind@v0.5.0
-        with:
-          version: v0.26.0
-
-      # 7️⃣ Create Kind cluster
+      # 6️⃣ & 7️⃣ Set up Kind cluster (Updated to official action)
       - name: Create Kind cluster
-        run: kind create cluster --name test-cluster
+        uses: helm/kind-action@v1.10.0
+        with:
+          cluster_name: test-cluster
+          wait: 300s
 
       # 8️⃣ Build Docker image and load into Kind
       - name: Build Docker image for Kind
@@ -50,8 +48,8 @@ jobs:
           # Apply deployment and service (now uses cicd:latest directly)
           kubectl apply -f k8s-deployment.yaml --validate=false
           
-          # Wait for rollout to finish
-          kubectl rollout status deployment/screenviewer-frontend --timeout=300s
+          # Wait for rollout to finish (increased timeout)
+          kubectl rollout status deployment/screenviewer-frontend --timeout=600s
 
       # 🔟 Debug pods (Runs even if previous steps fail)
       - name: Debug Kubernetes State
