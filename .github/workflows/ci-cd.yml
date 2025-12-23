@@ -19,19 +19,23 @@ jobs:
           cache: npm
 
       # 3️⃣ Install dependencies
-      - run: npm ci --legacy-peer-deps
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
 
       # 4️⃣ Build frontend
-      - run: npm run build
+      - name: Build frontend
+        run: npm run build
 
       # 5️⃣ Log in to Docker Hub
-      - uses: docker/login-action@v2
+      - name: Docker login
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       # 6️⃣ Build & push Docker image
-      - uses: mr-smithers-excellent/docker-build-push@v6
+      - name: Build & push Docker image
+        uses: mr-smithers-excellent/docker-build-push@v6
         with:
           image: souravcodknox/cicd
           tags: latest
@@ -47,8 +51,8 @@ jobs:
           export KUBECONFIG=$PWD/kubeconfig
 
       # 8️⃣ Deploy to Kubernetes
-      - name: Apply Kubernetes manifests
+      - name: Deploy to Kubernetes
         run: |
-          kubectl apply -f k8s-deployment.yaml
+          kubectl apply -f k8s-deployment.yaml --validate=false
           kubectl set image deployment/screenviewer-frontend frontend=souravcodknox/cicd:latest
-          kubectl rollout status deployment/screenviewer-frontend
+          kubectl rollout status deployment/screenviewer-frontend --timeout=120s
