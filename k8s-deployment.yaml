@@ -15,6 +15,7 @@ spec:
       containers:
         - name: frontend
           image: souravcodknox/cicd:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
           # Add readiness and liveness probes to help Kubernetes know when pod is ready

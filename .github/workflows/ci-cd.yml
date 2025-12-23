@@ -41,20 +41,17 @@ jobs:
       # 8️⃣ Build Docker image and load into Kind
       - name: Build Docker image for Kind
         run: |
-          docker build -t cicd:latest -f Dockerfile.ci .
-          kind load docker-image cicd:latest --name test-cluster
+          docker build -t souravcodknox/cicd:latest -f Dockerfile.ci .
+          kind load docker-image souravcodknox/cicd:latest --name test-cluster
 
       # 9️⃣ Deploy to Kubernetes
       - name: Apply Kubernetes manifests
         run: |
-          # Apply deployment and service
+          # Apply deployment and service (now uses cicd:latest directly)
           kubectl apply -f k8s-deployment.yaml --validate=false
           
-          # Update deployment image (ensures latest image)
-          kubectl set image deployment/screenviewer-frontend frontend=cicd:latest
-          
-          # Wait for rollout to finish (increased timeout)
-          kubectl rollout status deployment/screenviewer-frontend --timeout=600s
+          # Wait for rollout to finish
+          kubectl rollout status deployment/screenviewer-frontend --timeout=300s
 
       # 🔟 Optional: Debug pods (if something fails)
       - name: Check pods
